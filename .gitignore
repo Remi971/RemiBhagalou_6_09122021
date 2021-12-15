@@ -4,4 +4,4 @@
 
 # BackEnd
 /backend/node_modules
-/backend/images
+/backend/images/*

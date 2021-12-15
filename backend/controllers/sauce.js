@@ -1,6 +1,7 @@
 const Sauce = require('../models/Sauce');
 const fs = require('fs');
 const app = require('../app');
+const { isArgumentsObject } = require('util/types');
 
 exports.getAllSauces = (req, res, next) => {
     Sauce.find()
@@ -64,7 +65,17 @@ exports.deleteSauce = (req, res, next) => {
     
 };
 
+
+
 exports.likeSauce = (req, res, next) => {
+    const removeFromArr = (arrOut) => {
+        let idx = arrOut.indexOf(req.body.userId);
+        console.log('idx from updateArr', idx);
+        if (idx > -1) {
+            arrOut.splice(idx, 1);
+        }
+        return arrOut;
+    }
     Sauce.findOne({_id: req.params.id})
         .then(sauce => {
             if (!sauce) {
@@ -77,21 +88,22 @@ exports.likeSauce = (req, res, next) => {
             let usersLiked = [...new Set(sauceObject.usersLiked)];
             let usersDisliked = [...new Set(sauceObject.usersDisliked)];
             
-            if (req.body.like === 1 && usersLiked.indexOf(req.body.userId) < 0) {
+            if (req.body.like === 1) {
+                usersDisliked = removeFromArr(usersDisliked);
                 usersLiked.push(req.body.userId);
+                // console.log(arr);
+                // usersLiked = arr.arrIn;
+                // usersDisliked = arr.arrOut;
                 message = 'Sauce liked !';
-            } else if (req.body.like === 0 && usersLiked.indexOf(req.body.userId) >= 0) {
-                const idxLiked = usersLiked.indexOf(req.body.userId);
-                usersLiked.splice(idxLiked, 1);
-                message = 'Sauce unliked !'
-            } else if (req.body.like === -1 && usersDisliked.indexOf(req.body.userId) < 0) {
+            } else if (req.body.like === 0) {
+                usersLiked = removeFromArr(usersLiked);
+                usersDisliked = removeFromArr(usersDisliked);
+                message = 'Not sure !'
+            } else if (req.body.like === -1) {
+                usersLiked = removeFromArr(usersLiked);
                 usersDisliked.push(req.body.userId);
                 message = 'Sauce disliked !';
-            } else if (req.body.like === 0 && usersDisliked.indexOf(req.body.userId) >= 0) {
-                const idxDisliked = usersDisliked.indexOf(req.body.userId);
-                usersDisliked.splice(idxDisliked, 1);
-                message = 'Sauce undisliked !';
-            }
+            } 
             sauceObject.usersLiked = usersLiked;
             sauceObject.likes = usersLiked.length;
             sauceObject.usersDisliked = usersDisliked;
