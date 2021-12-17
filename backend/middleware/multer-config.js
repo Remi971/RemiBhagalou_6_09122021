@@ -7,14 +7,13 @@ const MIME_TYPES = {
 };
 
 const storage = multer.diskStorage({
-    destination: (req, file, callback) => {
+    destination: (req, file, callback) => {//indique à multer où enregistrer les fichiers
         callback(null, 'images')
     },
-    filename: (req, file, callback) => {
+    filename: (req, file, callback) => {//Crée un nouveau nom à partr du nom d'origine
         let name = file.originalname.split(' ').join('_');
         const extension = MIME_TYPES[file.mimetype];
-        // vérifier si extension déjà présente !
-        if (/\.[a-z]{2,4}$/.test(name)) {
+        if (/\.[a-z]{2,4}$/.test(name)) {// vérifie si une extension est déjà présente !
             name = name.replace(/\.[a-z]{2,4}$/, '');
         }
         callback(null, name + Date.now() + '.' + extension);

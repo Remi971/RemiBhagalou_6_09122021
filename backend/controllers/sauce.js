@@ -1,11 +1,28 @@
 const Sauce = require('../models/Sauce');
 const fs = require('fs');
 const app = require('../app');
-const { isArgumentsObject } = require('util/types');
+//const { isArgumentsObject } = require('util/types');
 
 exports.getAllSauces = (req, res, next) => {
     Sauce.find()
-        .then(sauces => res.status(200).json(sauces))
+        .then(sauces => {
+            // Suppression des anciennes images de sauces dont l'image a été mdifiée
+            let arrImagesDB =  [];
+            for (idx in sauces) {//Liste des images des sauces de la base de données
+                const filename = sauces[idx].imageUrl.split('/images/')[1];
+                arrImagesDB.push(filename)
+            }
+            fs.readdir('./images', (err, files) => {// Liste des images présentes dans le dossier images
+                if (files.length > 0) {
+                    files.forEach(file => {
+                      if (!arrImagesDB.includes(file) && file !== ".gitignore") {// exclusion du fichier .gitignore
+                        fs.unlink(`images/${file}`, () => console.log(`Previous image : ${file} has been deleted`) )
+                      }
+                    });
+                }
+            });
+            res.status(200).json(sauces);
+        })
         .catch(error => res.status(400).json({ error }));
 };
 
@@ -32,7 +49,7 @@ exports.createSauce = (req, res, next) => {
 };
 
 exports.modifySauce = (req, res, next) => {
-    const sauceObject = req.file ?
+    const sauceObject = req.file ?//Vérifie si req.file existe ou pas et donc si une image à été téléchargée
     { ...JSON.parse(req.body.sauce),
     imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
     } : {...req.body};
@@ -91,14 +108,11 @@ exports.likeSauce = (req, res, next) => {
             if (req.body.like === 1) {
                 usersDisliked = removeFromArr(usersDisliked);
                 usersLiked.push(req.body.userId);
-                // console.log(arr);
-                // usersLiked = arr.arrIn;
-                // usersDisliked = arr.arrOut;
                 message = 'Sauce liked !';
             } else if (req.body.like === 0) {
                 usersLiked = removeFromArr(usersLiked);
                 usersDisliked = removeFromArr(usersDisliked);
-                message = 'Not sure !'
+                message = 'Not sure !';
             } else if (req.body.like === -1) {
                 usersLiked = removeFromArr(usersLiked);
                 usersDisliked.push(req.body.userId);
