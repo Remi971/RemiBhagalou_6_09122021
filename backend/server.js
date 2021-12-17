@@ -1,7 +1,7 @@
 const http = require('http'); // Import du package http natif de Node pour créer un serveur
 const app = require('./app'); // Import de l'appli (fonctions middleware)
 
-const normalizePort = val => { // Renvoie un port valide, qu'il soit fourni sous la forme d'un numéro ou d'une chaîne
+const normalizePort = val => { // Normalisation de Port : Renvoie un port valide, qu'il soit fourni sous la forme d'un numéro ou d'une chaîne
     const port = parseInt(val, 10);
     if (isNaN(port)) {
         return val;
@@ -18,8 +18,8 @@ const errorHandler = error => { // Recherche les différentes erreurs et les gè
     if (error.syscall !== 'listen') {
         throw error;
     }
-    const adress = server.adress();
-    const bind = typeof adress === 'string' ? 'pipe ' + address : 'port: ' + port;
+    const address = server.address();
+    const bind = typeof address === 'string' ? 'pipe ' + address : 'port: ' + port;
     switch (error.code) {
         case 'EACCES':
             console.error(bind + ' requires elevated privileges.');
